@@ -16,3 +16,10 @@ export const registerUserAPI = async(reqBody:any)=>{
 export const loginAPI = async(reqBody:any)=>{
     return await commonAPI("POST",`${baseURL}/user/login`,reqBody,"")
 }
+
+//edit password API
+
+export const editPasswordAPI = async(reqBody:any,reqHeader:any)=>{
+
+    return await commonAPI("PUT",`${baseURL}/user/password-edit`,reqBody,reqHeader);
+}
