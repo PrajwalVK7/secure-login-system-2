@@ -7,12 +7,12 @@ import Apply from './pages/Apply';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
-    const storedLoggedIn = localStorage.getItem('isLoggedIn');
+    const storedLoggedIn = sessionStorage.getItem('isLoggedIn');
     return storedLoggedIn ? JSON.parse(storedLoggedIn) : false;
   });
 
   useEffect(() => {
-    localStorage.setItem('isLoggedIn', JSON.stringify(isLoggedIn));
+    sessionStorage.setItem('isLoggedIn', JSON.stringify(isLoggedIn));
   }, [isLoggedIn]);
 
   const handleLogin = () => {
