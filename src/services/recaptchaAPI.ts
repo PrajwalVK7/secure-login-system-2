@@ -1,0 +1,1 @@
+export const recaptchaAPI = "6LcCA6IpAAAAAMSVubOZg2GBYegl9QebtSbrezDP"
