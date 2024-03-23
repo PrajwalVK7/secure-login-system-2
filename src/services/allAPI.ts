@@ -23,3 +23,9 @@ export const editPasswordAPI = async(reqBody:any,reqHeader:any)=>{
 
     return await commonAPI("PUT",`${baseURL}/user/password-edit`,reqBody,reqHeader);
 }
+
+// event registration API
+
+export const registerEvent = async(reqBody:any,reqHeader:any)=>{
+    return await commonAPI("POST",`${baseURL}/user/register-event`,reqBody,reqHeader)
+}

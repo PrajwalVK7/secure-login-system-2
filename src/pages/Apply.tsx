@@ -4,6 +4,8 @@ import { Col, Row, Form } from 'react-bootstrap';
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import ReCAPTCHA from "react-google-recaptcha";
 import { recaptchaAPI } from '../services/recaptchaAPI';
+import { registerEvent } from '../services/allAPI';
+import Swal from 'sweetalert2';
 
 interface FormData {
     title: string;
@@ -36,7 +38,7 @@ function Apply() {
         category: "",
     });
     const [isChecked, setIsChecked] = useState(false);
-    const [iscaptchaVerified,setIsCaptchaVerified] = useState(false)
+    const [iscaptchaVerified, setIsCaptchaVerified] = useState(false)
 
     console.log(eventData)
 
@@ -98,16 +100,17 @@ function Apply() {
 
 
     };
-    
-    const onChange = (value:any|null)=>{
-        if(value){
+
+    const onChange = (value: any | null) => {
+        if (value) {
             setIsCaptchaVerified(true)
         }
-        else{
+        else {
             setIsCaptchaVerified(false)
         }
     }
-    const handleSubmit = () => {
+    const handleSubmit =async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
 
         const { title, description, file, days, dob, password, email, scheme, category } = eventData;
 
@@ -117,14 +120,70 @@ function Apply() {
             if (!isChecked) {
                 alert("Please agree terms and conditions")
             } else {
-                if(iscaptchaVerified){
-                    
+                if (iscaptchaVerified) {
+                    const reqBody = new FormData();
+                    reqBody.append("title", title);
+                    reqBody.append("description", description);
+                    reqBody.append("file", file);
+                    reqBody.append("days", days.toString());
+                    reqBody.append("dob", dob);
+                    reqBody.append("password", password);
+                    reqBody.append("email",email);
+                    reqBody.append("scheme",scheme);
+                    reqBody.append("category",category);
+
+                    const token = sessionStorage.getItem("token");
+                    const reqHeader = {
+                        "Content-Type": "multipart/form-data",
+                        "Authorization":`Bearer ${token}`
+                    }
+                        const result:any = await registerEvent(reqBody,reqHeader);
+                        console.log(result)
+                        if(result.status===200){
+                            Swal.fire({
+                                icon: "success",
+                                title: "hey hey",
+                                text: "Content submitted",
+                              });    
+                                              
+                            } 
+                                               
+                        else{
+                            Swal.fire({
+                                icon: "error",
+                                title: "Oops...",
+                                text: result.response.data,
+                              });    
+                                              
+                            }
+
+
+
+
+
+                }
+                else{
+                    alert("Please, follow the reCaptch")
                 }
             }
         }
 
     };
+const resetForm = ()=>{
+    setEventData({
+        title:"",
+        description:"",
+        password:"",
+        days:1,
+        dob:"",
+        scheme:"",
+        category:"",
+        email:"",
+        file:null,
 
+    })
+    
+}
 
 
     return (
@@ -134,7 +193,7 @@ function Apply() {
                 <div className="main container-fluid mt-5 container">
                     <Row>
                         <Col lg={12} sm={12} xs={12} md={12}>
-                            <Form className='container mt-3 mb-5 p-3' id='form-submit'>
+                            <Form className='container mt-3 mb-5 p-3 rounded shadow' id='form-submit' onSubmit={handleSubmit}>
                                 <h2 className='text-center'>Submit Your Idea</h2>
                                 <div>
                                     <div id='content '>
@@ -167,7 +226,7 @@ function Apply() {
                                         </div>
                                         <div>
                                             <Form.Group className="mb-3" controlId="formFile">
-                                                <Form.Label>Upload File</Form.Label>
+                                                <Form.Label>Upload File (only pdf,doc,docx) are allowed</Form.Label>
                                                 <Form.Control
                                                     type="file"
                                                     accept=".pdf, .doc, .docx"
@@ -227,18 +286,7 @@ function Apply() {
                                                     <span className='text-danger'>error: {inputError.emailError}</span>
                                                 )}                                            </Form.Group>
                                         </div>
-                                        <div>
-                                            <Form.Group className="mb-3" controlId="formPassword">
-                                                <Form.Label>Password</Form.Label>
-                                                <Form.Control
-                                                    type="password"
-                                                    placeholder="Enter Your Password"
-                                                    required
-                                                    name='password'
-                                                    value={eventData.password}
-                                                    onChange={handleChange} />
-                                            </Form.Group>
-                                        </div>
+                                        
                                         <div>
                                             <Form.Group className="mb-3" controlId="formRadio">
                                                 <Form.Label>Scheme</Form.Label>
@@ -275,7 +323,18 @@ function Apply() {
                                                 </Form.Select>
                                             </Form.Group>
                                         </div>
-
+                                        <div>
+                                            <Form.Group className="mb-3" controlId="formPassword">
+                                                <Form.Label>Enter Yor Password</Form.Label>
+                                                <Form.Control
+                                                    type="password"
+                                                    placeholder="Enter Your Password "
+                                                    required
+                                                    name='password'
+                                                    value={eventData.password}
+                                                    onChange={handleChange} />
+                                            </Form.Group>
+                                        </div>
                                         <div className="mb-5">
                                             <Form.Group className="mb-5" controlId="formCheckbox">
                                                 <Form.Check
@@ -291,8 +350,8 @@ function Apply() {
                                             onChange={onChange}
                                         />,
                                         <div className='d-flex justify-content-center mb-5'>
-                                            <button className='btn btn-warning me-5'>Reset</button>
-                                            <button type='submit' className='btn btn-success me-5' onClick={handleSubmit}>Submit</button>
+                                            <button className='btn btn-warning me-5' onClick={resetForm}>Reset</button>
+                                            <button type='submit' className='btn btn-success me-5' >Submit</button>
                                         </div>
                                     </div>
                                 </div>
