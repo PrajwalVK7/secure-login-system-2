@@ -8,3 +8,4 @@ Steps To run this project====
 
 3) Create and connect MongoDb local Db,And copy the connection string , and paste into the .emv file (In server)
    
+4) Please add your google recaptch API , and add set the domains in google recaptch console for hosting
