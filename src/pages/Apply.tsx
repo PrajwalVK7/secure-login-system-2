@@ -5,7 +5,7 @@ import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import ReCAPTCHA from "react-google-recaptcha";
 import { recaptchaAPI } from '../services/recaptchaAPI';
 import { registerEvent } from '../services/allAPI';
-import Swal from 'sweetalert2';
+import { response } from 'express';
 
 interface FormData {
     title: string;
@@ -140,20 +140,11 @@ function Apply() {
                         const result:any = await registerEvent(reqBody,reqHeader);
                         console.log(result)
                         if(result.status===200){
-                            Swal.fire({
-                                icon: "success",
-                                title: "hey hey",
-                                text: "Content submitted",
-                              });    
-                                              
-                            } 
-                                               
+                            alert("Content submitted")
+                        }
                         else{
-                            Swal.fire({
-                                icon: "error",
-                                title: "Oops...",
-                                text: result.response.data,
-                              });    
+                            console.log(result.response.data)
+                            alert(result.response.data)  
                                               
                             }
 
