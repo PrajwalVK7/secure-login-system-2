@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import Header from '../components/Header';
 import { Col, Row, Form } from 'react-bootstrap';
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
+import ReCAPTCHA from "react-google-recaptcha";
+import { recaptchaAPI } from '../services/recaptchaAPI';
 
 interface FormData {
     title: string;
@@ -26,7 +28,7 @@ function Apply() {
         title: "",
         description: "",
         file: null,
-        days:1,
+        days: 1,
         dob: "",
         password: "",
         email: "",
@@ -34,6 +36,7 @@ function Apply() {
         category: "",
     });
     const [isChecked, setIsChecked] = useState(false);
+    const [iscaptchaVerified,setIsCaptchaVerified] = useState(false)
 
     console.log(eventData)
 
@@ -60,7 +63,7 @@ function Apply() {
 
         setEventData({ ...eventData, [name]: value });
 
-        if (name==="email") {
+        if (name === "email") {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
             if (!emailRegex.test(value)) {
@@ -72,45 +75,57 @@ function Apply() {
 
             }
         }
-        if (value==="dob") {
+        if (value === "dob") {
             const dobRegex = /^(19[0-9]{2}|200[0-5])-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
             if (!dobRegex.test(value)) {
                 setInputError({ ...inputError, dobError: "Invalid date, only age above 19,are eligible" });
             } else {
-                setInputError({ ...inputError, dobError: "" }); 
+                setInputError({ ...inputError, dobError: "" });
             }
         }
         if (name === "days") {
             const daysValue = parseInt(value);
-        
-            if (isNaN(daysValue) || daysValue < 1 || daysValue >= 10) {
+
+            if (isNaN(daysValue) || daysValue < 1 || daysValue > 10) {
                 setInputError({ ...inputError, daysError: "Invalid, Number of days must be between 1 and 10" });
             } else {
                 setInputError({ ...inputError, daysError: "" });
             }
         }
-        
-        
-console.log(inputError)
+
+
+        console.log(inputError)
 
 
     };
-
+    
+    const onChange = (value:any|null)=>{
+        if(value){
+            setIsCaptchaVerified(true)
+        }
+        else{
+            setIsCaptchaVerified(false)
+        }
+    }
     const handleSubmit = () => {
 
         const { title, description, file, days, dob, password, email, scheme, category } = eventData;
 
-        if(!title||!description||!file||!days||!dob||!password||!email||!scheme||!category){
+        if (!title || !description || !file || !days || !dob || !password || !email || !scheme || !category) {
             alert("Please Fill the form completely")
-        }else{
-            if(!isChecked){
+        } else {
+            if (!isChecked) {
                 alert("Please agree terms and conditions")
-            }else{
-                alert("proveed")
+            } else {
+                if(iscaptchaVerified){
+                    
+                }
             }
         }
 
     };
+
+
 
     return (
         <>
@@ -271,7 +286,10 @@ console.log(inputError)
                                                 />
                                             </Form.Group>
                                         </div>
-
+                                        <ReCAPTCHA
+                                            sitekey={recaptchaAPI}
+                                            onChange={onChange}
+                                        />,
                                         <div className='d-flex justify-content-center mb-5'>
                                             <button className='btn btn-warning me-5'>Reset</button>
                                             <button type='submit' className='btn btn-success me-5' onClick={handleSubmit}>Submit</button>
