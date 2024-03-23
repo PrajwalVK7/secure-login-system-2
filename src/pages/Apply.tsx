@@ -1,17 +1,24 @@
 import React, { useState } from 'react';
 import Header from '../components/Header';
 import { Col, Row, Form } from 'react-bootstrap';
+import FloatingLabel from 'react-bootstrap/FloatingLabel';
 
 interface FormData {
     title: string;
     description: string;
     file: File | null;
-    days: string;
+    days: number;
     dob: string;
     password: string;
     email: string;
     scheme: string;
     category: string;
+}
+interface Error {
+    emailError: string;
+    daysError: String;
+    dobError: String;
+    generalError: String;
 }
 
 function Apply() {
@@ -19,7 +26,7 @@ function Apply() {
         title: "",
         description: "",
         file: null,
-        days: "",
+        days:1,
         dob: "",
         password: "",
         email: "",
@@ -31,23 +38,80 @@ function Apply() {
     console.log(eventData)
 
     console.log(isChecked)
+    const [inputError, setInputError] = useState<Error>({
+        emailError: "",
+        daysError: "",
+        dobError: "",
+        generalError: ""
+    })
+    const formatDate = (dateString: string): string => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0'); // January is 0!
+        const year = date.getFullYear();
+        return `${day}-${month}-${year}`;
+    };
 
-    const handleSubmit = ()=>{
-alert("zxdfghjk")
-        const {title,description,file,days,dob,password,email,scheme,category}= eventData;
 
-        if(isChecked){
-            if(!title){
-                alert("blah")
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+        const { name, value } = e.target;
+
+        setEventData({ ...eventData, [name]: value });
+
+        if (name==="email") {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!emailRegex.test(value)) {
+                setInputError({ ...inputError, emailError: "Invalid email address" })
+                // console.log(inputError.emailError)
             }
-            else{
-                alert("Proceed")
+            else {
+                setInputError({ ...inputError, emailError: "" })
+
             }
         }
-        else{
-            alert("Checkbox")
+        if (value==="dob") {
+            const dobRegex = /^(19[0-9]{2}|200[0-5])-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
+            if (!dobRegex.test(value)) {
+                setInputError({ ...inputError, dobError: "Invalid date, only age above 19,are eligible" });
+            } else {
+                setInputError({ ...inputError, dobError: "" }); 
+            }
         }
-    }
+        if (name === "days") {
+            const daysValue = parseInt(value);
+        
+            if (isNaN(daysValue) || daysValue < 1 || daysValue >= 10) {
+                setInputError({ ...inputError, daysError: "Invalid, Number of days must be between 1 and 10" });
+            } else {
+                setInputError({ ...inputError, daysError: "" });
+            }
+        }
+        
+        
+console.log(inputError)
+
+
+    };
+
+    const handleSubmit = () => {
+
+        const { title, description, file, days, dob, password, email, scheme, category } = eventData;
+
+        if(!title||!description||!file||!days||!dob||!password||!email||!scheme||!category){
+            alert("Please Fill the form completely")
+        }else{
+            if(!isChecked){
+                alert("Please agree terms and conditions")
+            }else{
+                alert("proveed")
+            }
+        }
+
+    };
+
     return (
         <>
             <Header />
@@ -55,7 +119,7 @@ alert("zxdfghjk")
                 <div className="main container-fluid mt-5 container">
                     <Row>
                         <Col lg={12} sm={12} xs={12} md={12}>
-                            <Form className='container mt-3 mb-5 p-3'  id='form-submit'>
+                            <Form className='container mt-3 mb-5 p-3' id='form-submit'>
                                 <h2 className='text-center'>Submit Your Idea</h2>
                                 <div>
                                     <div id='content '>
@@ -66,20 +130,24 @@ alert("zxdfghjk")
                                                     type="text"
                                                     placeholder="Enter the title"
                                                     required
-                                                    onChange={(e) => setEventData({ ...eventData, title: e.target.value })}
+                                                    name='title'
+                                                    value={eventData.title}
+                                                    onChange={handleChange}
                                                 />
                                             </Form.Group>
                                         </div>
                                         <div>
                                             <Form.Group className="mb-3">
-                                                <Form.Label>Description</Form.Label>
-                                                <textarea
-                                                    className='form-control'
-                                                    name="description"
-                                                    id="formDescription"
-                                                    required
-                                                    onChange={(e) => setEventData({ ...eventData, description: e.target.value })}
-                                                ></textarea>
+                                                <FloatingLabel controlId="floatingTextarea2" label="Comments">
+                                                    <Form.Control
+                                                        as="textarea"
+                                                        placeholder="description"
+                                                        style={{ height: '100px' }}
+                                                        name='description'
+                                                        value={eventData.description}
+                                                        onChange={handleChange}
+                                                    />
+                                                </FloatingLabel>
                                             </Form.Group>
                                         </div>
                                         <div>
@@ -106,9 +174,13 @@ alert("zxdfghjk")
                                                     type="number"
                                                     placeholder="No of days required to complete"
                                                     required
-                                                    onChange={(e) => setEventData({ ...eventData, days: e.target.value })}
-                                                />
+                                                    name='days'
+                                                    value={eventData.days}
+                                                    onChange={handleChange} />
                                             </Form.Group>
+                                            {inputError && inputError.daysError && (
+                                                <span className='text-danger'>error: {inputError.daysError}</span>
+                                            )}
                                         </div>
                                         <div>
                                             <Form.Group className="mb-3">
@@ -116,10 +188,16 @@ alert("zxdfghjk")
                                                 <Form.Control
                                                     type="date"
                                                     required
-                                                    onChange={(e) => setEventData({ ...eventData, dob: e.target.value })}
+                                                    name='dob'
+                                                    value={eventData.dob}
+                                                    onChange={handleChange}
                                                 />
                                             </Form.Group>
+                                            {inputError && inputError.dobError && (
+                                                <span className='text-danger'>error: {inputError.dobError}</span>
+                                            )}
                                         </div>
+
                                         <div>
                                             <Form.Group className="mb-3" controlId="formEmail">
                                                 <Form.Label>Email</Form.Label>
@@ -127,9 +205,12 @@ alert("zxdfghjk")
                                                     type="email"
                                                     placeholder="Enter Your Email"
                                                     required
-                                                    onChange={(e) => setEventData({ ...eventData, email: e.target.value })}
-                                                />
-                                            </Form.Group>
+                                                    name='email'
+                                                    value={eventData.email}
+                                                    onChange={handleChange} />
+                                                {inputError && inputError.emailError && (
+                                                    <span className='text-danger'>error: {inputError.emailError}</span>
+                                                )}                                            </Form.Group>
                                         </div>
                                         <div>
                                             <Form.Group className="mb-3" controlId="formPassword">
@@ -138,8 +219,9 @@ alert("zxdfghjk")
                                                     type="password"
                                                     placeholder="Enter Your Password"
                                                     required
-                                                    onChange={(e) => setEventData({ ...eventData, password: e.target.value })}
-                                                />
+                                                    name='password'
+                                                    value={eventData.password}
+                                                    onChange={handleChange} />
                                             </Form.Group>
                                         </div>
                                         <div>
@@ -152,16 +234,14 @@ alert("zxdfghjk")
                                                         name="scheme"
                                                         value="A"
                                                         required
-                                                        onChange={(e) => setEventData({ ...eventData, scheme: e.target.value })}
-                                                    />
+                                                        onChange={handleChange} />
                                                     <Form.Check
                                                         type="radio"
                                                         label="B"
                                                         name="scheme"
                                                         value="B"
                                                         required
-                                                        onChange={(e) => setEventData({ ...eventData, scheme: e.target.value })}
-                                                    />
+                                                        onChange={handleChange} />
                                                 </div>
                                             </Form.Group>
                                         </div>
@@ -182,19 +262,19 @@ alert("zxdfghjk")
                                         </div>
 
                                         <div className="mb-5">
-                                        <Form.Group className="mb-5" controlId="formCheckbox">
-                                            <Form.Check
-                                                type="checkbox"
-                                                label="I agree to the terms and conditions"
-                                                required
-                                                onChange={(e)=>setIsChecked(e.target.checked)}
-                                            />
-                                        </Form.Group>
-                                    </div>
+                                            <Form.Group className="mb-5" controlId="formCheckbox">
+                                                <Form.Check
+                                                    type="checkbox"
+                                                    label="I agree to the terms and conditions"
+                                                    required
+                                                    onChange={(e) => setIsChecked(e.target.checked)}
+                                                />
+                                            </Form.Group>
+                                        </div>
 
                                         <div className='d-flex justify-content-center mb-5'>
                                             <button className='btn btn-warning me-5'>Reset</button>
-                                            <button type='submit' className='btn btn-success me-5'onClick={handleSubmit}>Submit</button>
+                                            <button type='submit' className='btn btn-success me-5' onClick={handleSubmit}>Submit</button>
                                         </div>
                                     </div>
                                 </div>
